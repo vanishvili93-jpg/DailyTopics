@@ -1,393 +1,267 @@
 import os
 import re
+import telebot
+from telebot import types
 
-if True:
-    import telebot
-    from telebot import types
+BOT_TOKEN = re.sub(r"\s+", "", os.environ["TELEGRAM_BOT_TOKEN"])
+WEB_APP_URL = os.environ.get("WEB_APP_URL", "").strip()
 
-    # === НАСТРОЙКИ ===
-    BOT_TOKEN = re.sub(r"\s+", "", os.environ["TELEGRAM_BOT_TOKEN"])
-    WEB_APP_URL = os.environ.get(
-        "SKAI_WEB_APP_URL",
-        "https://www.skai.gr/",
-    )
+bot = telebot.TeleBot(BOT_TOKEN)
 
-    bot = telebot.TeleBot(BOT_TOKEN)
-
-    # ============================================
-    # ЭКРАН 1 — START (Welcome)
-    # ============================================
-    @bot.message_handler(commands=['start'])
-    def start(message):
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_open = types.InlineKeyboardButton(
-            text="📰 Ανοίξτε το SKAI",
-            web_app=types.WebAppInfo(url=WEB_APP_URL)
-        )
-        btn_headlines = types.InlineKeyboardButton(
-            text="📋 Τα νέα της ημέρας",
-            callback_data="headlines"
-        )
-        btn_sommario = types.InlineKeyboardButton(
-            text="🏛 Περίληψη",
-            callback_data="sommario"
-        )
-        markup.add(btn_open)
-        markup.row(btn_headlines, btn_sommario)
-
-        text = (
-            "📰 **Καλώς ήρθατε στο SKAI.**\n\n"
-            "_«Η ενημέρωση είναι ο καθημερινός διάλογος με τους αναγνώστες μας.»_\n\n"
-            "Από το **1993**, αυτός ο διάλογος συνεχίζεται — στην τηλεόραση, στο διαδίκτυο, "
-            "και σήμερα εδώ στο Telegram. Κάθε εποχή μια μικρή επιλογή από πολιτισμό, "
-            "ταξίδια, κουζίνα, επιστήμη και αθλητικά, για ανάγνωση με ηρεμία στο chat.\n\n"
-            "Για να ξεκινήσετε, πατήστε **Τα νέα της ημέρας**."
-        )
-
-        bot.send_message(message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
+try:
+    if WEB_APP_URL:
+        bot.set_chat_menu_button(menu_button=types.MenuButtonWebApp(type="web_app", text="Abrir", web_app=types.WebAppInfo(url=WEB_APP_URL)))
+except Exception as e:
+    print("Menu button error: " + str(e))
 
 
-    # ============================================
-    # ЭКРАН 2 — HEADLINES (Τα νέα της ημέρας)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "headlines")
-    def headlines(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        btn1 = types.InlineKeyboardButton(text="🎨 Πολιτισμός — εκθέσεις φθινοπώρου", callback_data="culture")
-        btn2 = types.InlineKeyboardButton(text="🍳 Κουζίνα — συνταγές με κυδώνι", callback_data="cuisine")
-        btn3 = types.InlineKeyboardButton(text="🏠 Ταξίδια — πέντε χωριά", callback_data="travel")
-        btn4 = types.InlineKeyboardButton(text="🏛 Περίληψη", callback_data="sommario")
-        markup.add(btn1, btn2, btn3, btn4)
-
-        text = (
-            "📋 **Τα νέα της ημέρας**\n\n"
-            "Τρία κείμενα επιλεγμένα για σήμερα. Κάθε ένα ολόκληρο στο chat.\n\n"
-            "**Πολιτισμός** — εκθέσεις φθινοπώρου: πέντε ραντεβού που αξίζουν "
-            "στα ελληνικά μουσεία.\n\n"
-            "**Κουζίνα** — η εποχή του κυδωνιού: τέσσερις κλασικές "
-            "συνταγές της ελληνικής παράδοσης.\n\n"
-            "**Ταξίδια** — πέντε ελληνικά χωριά για να ανακαλύψετε "
-            "τα φθινοπωρινά Σαββατοκύριακα.\n\n"
-            "Πατήστε έναν τίτλο για να ανοίξετε το πλήρες κείμενο."
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
+def open_button():
+    if WEB_APP_URL:
+        return types.InlineKeyboardButton(text="📰 Abrir Temas del Dia", web_app=types.WebAppInfo(url=WEB_APP_URL))
+    return types.InlineKeyboardButton(text="📰 Abrir Temas del Dia", url="https://www.elpais.com")
 
 
-    # ============================================
-    # ЭКРАН 3 — CULTURE (Πολιτισμός)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "culture")
-    def culture(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_open = types.InlineKeyboardButton(
-            text="📰 Ανοίξτε το SKAI",
-            web_app=types.WebAppInfo(url=WEB_APP_URL)
-        )
-        btn_headlines = types.InlineKeyboardButton(text="📋 Τα νέα της ημέρας", callback_data="headlines")
-        btn_sommario = types.InlineKeyboardButton(text="🏛 Περίληψη", callback_data="sommario")
-        markup.add(btn_open)
-        markup.row(btn_headlines, btn_sommario)
-
-        text = (
-            "🎨 **Εκθέσεις φθινοπώρου: πέντε ραντεβού στα ελληνικά μουσεία**\n\n"
-            "Τα μουσεία ανοίγουν ξανά με νέα σεζόν. Πέντε ραντεβού "
-            "που αξίζουν την προσοχή σας αυτό το φθινόπωρο.\n\n"
-            "**Αθήνα — τέχνη του 20ού αιώνα**\n"
-            "Μια μεγάλη αναδρομική στην Εθνική Πινακοθήκη συγκεντρώνει "
-            "έργα κορυφαίων Ελλήνων ζωγράφων. Δίπλα στους πίνακες, "
-            "αρχειακό υλικό και αδημοσίευτες φωτογραφίες.\n\n"
-            "**Θεσσαλονίκη — βυζαντινή κληρονομιά**\n"
-            "Το Μουσείο Βυζαντινού Πολιτισμού παρουσιάζει ψηφιδωτά "
-            "και εικόνες σε έναν διάλογο ανάμεσα στο παλιό και το νέο. "
-            "Μοναδική ευκαιρία.\n\n"
-            "**Ηράκλειο — μινωικός πολιτισμός**\n"
-            "Νέα ευρήματα από τις ανασκαφές στην Κνωσό εκτίθενται "
-            "για πρώτη φορά. Η έκθεση αποκαλύπτει πτυχές της "
-            "καθημερινής ζωής πριν 3.500 χρόνια.\n\n"
-            "**Ναύπλιο — φωτογραφία νεοελληνικής ιστορίας**\n"
-            "Ασπρόμαυρα ρεπορτάζ αφηγούνται την πόλη και την Πελοπόννησο "
-            "στα χρόνια της ανασυγκρότησης. Ντοκουμεντάρικο και ποιητικό.\n\n"
-            "**Ιωάννινα — σύγχρονη γλυπτική**\n"
-            "Το Δημοτικό Μουσείο φιλοξενεί νέες εγκαταστάσεις στους "
-            "υπαίθριους χώρους δίπλα στη λίμνη. Τα έργα, αφιερωμένα "
-            "στο νερό, αρμονούν με το φθινοπωρινό φως.\n\n"
-            "_Ημερομηνίες και ωράρια στους επίσημους ιστότοπους των μουσείων._"
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
+@bot.message_handler(commands=['start'])
+def start(message):
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(open_button())
+    markup.row(types.InlineKeyboardButton(text="📋 Los temas del dia", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"))
+    text = ("📰 *Bienvenidos a Temas del Dia.*\n\n"
+        "_La informacion es un derecho de todos._\n\n"
+        "Cada dia una seleccion de cultura, viajes, "
+        "cocina, ciencia y deporte, para leer "
+        "con calma en el chat.\n\n"
+        "Para empezar, pulse *Los temas del dia*.")
+    bot.send_message(message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
-    # ============================================
-    # ЭКРАН 4 — CUISINE (Κουζίνα)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "cuisine")
-    def cuisine(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_open = types.InlineKeyboardButton(
-            text="📰 Ανοίξτε το SKAI",
-            web_app=types.WebAppInfo(url=WEB_APP_URL)
-        )
-        btn_headlines = types.InlineKeyboardButton(text="📋 Τα νέα της ημέρας", callback_data="headlines")
-        btn_sommario = types.InlineKeyboardButton(text="🏛 Περίληψη", callback_data="sommario")
-        markup.add(btn_open)
-        markup.row(btn_headlines, btn_sommario)
-
-        text = (
-            "🍳 **Η εποχή του κυδωνιού: τέσσερις κλασικές συνταγές**\n\n"
-            "Το κυδώνι είναι ένα από τα πιο χαρακτηριστικά φρούτα "
-            "του ελληνικού φθινοπώρου. Τέσσερις συνταγές για να "
-            "αξιοποιήσετε τα καλύτερα.\n\n"
-            "**Κυδώνι ψητό στον φούρνο**\n"
-            "Κόβετε τα κυδώνια στα τέσσερα, τα βάζετε σε ταψί με ζάχαρη, "
-            "κανέλα και γαρίφαλο. Ψήνετε στους 180° για μία ώρα. "
-            "Τρώγονται ζεστά ή κρύα.\n\n"
-            "**Κυδωνόπαστο**\n"
-            "Βράζετε τα κυδώνια μέχρι να μαλακώσουν, τα πολτοποιείτε "
-            "με ζάχαρη και χυμό λεμονιού. Στεγνώνει σε χαμηλή θερμοκρασία. "
-            "Το κλασικό γλυκό κουταλιού.\n\n"
-            "**Κυδώνι με κρέας**\n"
-            "Μοσχάρι ή χοιρινό κοκκινιστό με κυδώνια. Κρεμμύδι, "
-            "ντομάτα, κανέλα — σιγοβράζει για δύο ώρες. Κλασική "
-            "συνταγή της ελληνικής κουζίνας.\n\n"
-            "**Μαρμελάδα κυδώνι**\n"
-            "Κυδώνια τριμμένα με ζάχαρη, χυμό λεμονιού και βανίλια. "
-            "Βράζει μέχρι να πήξει. Ιδανική για πρωινό με βούτυρο και ψωμί.\n\n"
-            "_Δοσολογίες και χρόνοι προσαρμόζονται κατά βούληση._"
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data == "headlines")
+def headlines(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(
+        types.InlineKeyboardButton(text="🎨 Cultura — exposiciones de otono", callback_data="culture"),
+        types.InlineKeyboardButton(text="🍳 Cocina — recetas regionales", callback_data="cuisine"),
+        types.InlineKeyboardButton(text="🏠 Viajes — cinco pueblos", callback_data="travel"),
+        types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"))
+    text = ("📋 *Los temas del dia*\n\n"
+        "Tres lecturas elegidas para hoy. "
+        "Cada una completa en el chat.\n\n"
+        "*Cultura* — exposiciones de otono: cinco "
+        "citas imprescindibles en los museos espanoles.\n\n"
+        "*Cocina* — recetas regionales: cuatro platos "
+        "clasicos de la tradicion espanola.\n\n"
+        "*Viajes* — cinco pueblos espanoles para "
+        "descubrir en un fin de semana de otono.\n\n"
+        "Pulse un titulo para abrir el articulo completo.")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
-    # ============================================
-    # ЭКРАН 5 — TRAVEL (Ταξίδια)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "travel")
-    def travel(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_open = types.InlineKeyboardButton(
-            text="📰 Ανοίξτε το SKAI",
-            web_app=types.WebAppInfo(url=WEB_APP_URL)
-        )
-        btn_headlines = types.InlineKeyboardButton(text="📋 Τα νέα της ημέρας", callback_data="headlines")
-        btn_sommario = types.InlineKeyboardButton(text="🏛 Περίληψη", callback_data="sommario")
-        markup.add(btn_open)
-        markup.row(btn_headlines, btn_sommario)
-
-        text = (
-            "🏠 **Πέντε ελληνικά χωριά για το φθινόπωρο**\n\n"
-            "Μακριά από τους δημοφιλείς προορισμούς, πέντε μικρά "
-            "χωριά που δείχνουν τον καλύτερο εαυτό τους το φθινόπωρο.\n\n"
-            "**Ζαγοροχώρια (Ήπειρος)**\n"
-            "Πέτρινα γεφύρια, μονοπάτια μέσα σε φαράγγια και "
-            "παραδοσιακοί ξενώνες. Τα χρώματα του φθινοπώρου "
-            "κάνουν τη Βίκο αξέχαστη. Καλύτερα τις καθημερινές.\n\n"
-            "**Δημητσάνα (Πελοπόννησος)**\n"
-            "Χτισμένη σε βουνοπλαγιά πάνω από το φαράγγι του Λούσιου. "
-            "Υπαίθριο Μουσείο Υδροκίνησης και ήσυχα καφενεία "
-            "με θέα τα πεύκα.\n\n"
-            "**Μέτσοβο (Ήπειρος)**\n"
-            "Ορεινό κεφαλοχώρι με τυροκομικά και κρασιά. Η πλατεία "
-            "ζωντανεύει τα απογεύματα. Το φθινόπωρο η ομίχλη "
-            "χαρίζει στο Μέτσοβο ιδιαίτερη ατμόσφαιρα.\n\n"
-            "**Μονεμβασιά (Πελοπόννησος)**\n"
-            "Η βυζαντινή καστροπολιτεία κρυμμένη πίσω από τον βράχο. "
-            "Πλακόστρωτα δρομάκια, εκκλησάκια και θάλασσα. "
-            "Το φθινόπωρο χωρίς πλήθη — μαγεία.\n\n"
-            "**Νυμφαίο (Μακεδονία)**\n"
-            "Ψηλά στο Βίτσι, ένα χωριό που αναστηλώθηκε με σεβασμό. "
-            "Αρχοντικά, το καταφύγιο αρκούδων του Αρκτούρου "
-            "και απόλυτη ησυχία.\n\n"
-            "_Για διαμονή συνιστάται κράτηση εντός εβδομάδας._"
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data == "culture")
+def culture(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(open_button())
+    markup.row(types.InlineKeyboardButton(text="📋 Los temas del dia", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"))
+    text = ("🎨 *Exposiciones de otono: cinco citas "
+        "en los museos espanoles*\n\n"
+        "Los museos reabren con nueva temporada.\n\n"
+        "*Madrid — arte del siglo XX*\n"
+        "Una gran retrospectiva en el Museo Reina Sofia "
+        "reune obras de los principales pintores espanoles "
+        "del siglo pasado. Material de archivo y "
+        "fotografias ineditas.\n\n"
+        "*Barcelona — diseno y arquitectura*\n"
+        "El MACBA presenta una exposicion dedicada al "
+        "diseno industrial catalan. Sesenta anos de objetos "
+        "cotidianos. Catalogo especialmente cuidado.\n\n"
+        "*Sevilla — fotografia del sur*\n"
+        "El Centro Andaluz de Arte Contemporaneo exhibe "
+        "reportajes en blanco y negro sobre Andalucia "
+        "en la posguerra. Mirada empatica y documental.\n\n"
+        "*Bilbao — escultura contemporanea*\n"
+        "El Guggenheim acoge nuevas instalaciones "
+        "en los espacios exteriores. Las obras dialogan "
+        "con la luz del otono.\n\n"
+        "*Valencia — arte fallero*\n"
+        "El Museo Fallero muestra bocetos y ninots "
+        "restaurados. Una tradicion unica vista "
+        "desde el taller del artista.\n\n"
+        "_Fechas y horarios en las webs oficiales._")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
-    # ============================================
-    # ЭКРАН 6 — SOMMARIO (Περίληψη)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "sommario")
-    def sommario(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_open = types.InlineKeyboardButton(
-            text="📰 Ανοίξτε το SKAI",
-            web_app=types.WebAppInfo(url=WEB_APP_URL)
-        )
-        btn_headlines = types.InlineKeyboardButton(text="📋 Τα νέα της ημέρας", callback_data="headlines")
-        btn_glossary = types.InlineKeyboardButton(text="📖 Γλωσσάριο", callback_data="glossary")
-        btn_faq = types.InlineKeyboardButton(text="❓ Συχνές ερωτήσεις", callback_data="faq")
-        btn_contact = types.InlineKeyboardButton(text="✏️ Επικοινωνία", callback_data="contact")
-        btn_about = types.InlineKeyboardButton(text="🏛 Σχετικά με το SKAI", callback_data="about")
-        markup.add(btn_open)
-        markup.add(btn_headlines)
-        markup.row(btn_glossary, btn_faq)
-        markup.row(btn_contact, btn_about)
-
-        text = (
-            "🏛 **Περίληψη**\n\n"
-            "Από αυτό το μενού μπορείτε:\n\n"
-            "• Να διαβάσετε **τα νέα της ημέρας** και τα άρθρα μας, "
-            "απευθείας εδώ.\n"
-            "• Να συμβουλευτείτε τις στήλες: Πολιτισμός, Ταξίδια, "
-            "Κουζίνα, Επιστήμη, Αθλητικά, Πρακτική Οικονομία.\n"
-            "• Να δείτε το γλωσσάριο και τις συχνές ερωτήσεις.\n"
-            "• Να μάθετε την ιστορία του SKAI και να επικοινωνήσετε "
-            "με τη σύνταξη.\n\n"
-            "Για την πλήρη έκδοση, χρησιμοποιήστε το κουμπί ανοίγματος."
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data == "cuisine")
+def cuisine(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(open_button())
+    markup.row(types.InlineKeyboardButton(text="📋 Los temas del dia", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"))
+    text = ("🍳 *Recetas regionales: cuatro platos clasicos*\n\n"
+        "La cocina espanola es patrimonio de "
+        "sabores regionales.\n\n"
+        "*Paella valenciana*\n"
+        "Arroz, pollo, conejo, garrofo, ferraura "
+        "y romero. El fuego tiene que ser de lena "
+        "y el socarrat es obligatorio. No lleva "
+        "chorizo.\n\n"
+        "*Pulpo a la gallega*\n"
+        "Pulpo cocido, cortado con tijera, "
+        "pimenton de la Vera, aceite de oliva "
+        "y sal gorda. Se sirve en plato de "
+        "madera. Sencillo y perfecto.\n\n"
+        "*Gazpacho andaluz*\n"
+        "Tomate, pepino, pimiento, ajo, pan "
+        "duro, vinagre y aceite. Se tritura "
+        "todo y se sirve muy frio. El plato "
+        "del verano espanol.\n\n"
+        "*Fabada asturiana*\n"
+        "Fabes de la Granja, chorizo, morcilla "
+        "y lacones. Coccion lenta durante horas. "
+        "El plato de cuchara por excelencia.\n\n"
+        "_Cantidades y tiempos al gusto personal._")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
-    # ============================================
-    # ЭКРАН 7 — GLOSSARY (Γλωσσάριο)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "glossary")
-    def glossary(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_headlines = types.InlineKeyboardButton(text="📋 Τα νέα της ημέρας", callback_data="headlines")
-        btn_sommario = types.InlineKeyboardButton(text="🏛 Περίληψη", callback_data="sommario")
-        markup.add(btn_headlines)
-        markup.add(btn_sommario)
-
-        text = (
-            "📖 **Μικρό γλωσσάριο**\n\n"
-            "Ορισμένοι όροι που συναντώνται συχνά στις στήλες μας:\n\n"
-            "**Σύνταξη** — η ομάδα που συλλέγει, επιλέγει και "
-            "προετοιμάζει τα κείμενα για δημοσίευση.\n\n"
-            "**Κύριο άρθρο** — άρθρο γνώμης, συχνά υπογεγραμμένο, "
-            "που ανοίγει μια ενότητα ή σελίδα.\n\n"
-            "**Φωτορεπορτάζ** — δημοσιογραφικό κείμενο χτισμένο "
-            "γύρω από μια σειρά φωτογραφιών.\n\n"
-            "**Διαχρονικό περιεχόμενο** — κείμενο που δεν εξαρτάται "
-            "από μια είδηση της ημέρας: πολιτισμός, ταξίδια, κουζίνα.\n\n"
-            "**Απεσταλμένος** — δημοσιογράφος που καλύπτει ειδήσεις "
-            "επί τόπου.\n\n"
-            "**Στήλη** — μόνιμη ενότητα αφιερωμένη σε ένα "
-            "συγκεκριμένο θέμα.\n\n"
-            "_Οι όροι χρησιμοποιούνται σύμφωνα με την τρέχουσα "
-            "πρακτική της ελληνικής δημοσιογραφίας._"
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
-
-
-    # ============================================
-    # ЭКРАН 8 — FAQ (Συχνές ερωτήσεις)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "faq")
-    def faq(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_headlines = types.InlineKeyboardButton(text="📋 Τα νέα της ημέρας", callback_data="headlines")
-        btn_sommario = types.InlineKeyboardButton(text="🏛 Περίληψη", callback_data="sommario")
-        markup.add(btn_headlines)
-        markup.add(btn_sommario)
-
-        text = (
-            "❓ **Συχνές ερωτήσεις**\n\n"
-            "**Αυτό το bot είναι επίσημο;**\n"
-            "Αυτή η έκδοση Telegram σας επιτρέπει να διαβάζετε "
-            "στο chat τα διαχρονικά περιεχόμενα του SKAI. "
-            "Η επιμέλεια γίνεται από τη σύνταξη· τα στοιχεία "
-            "επικοινωνίας βρίσκονται στην ενότητα Επικοινωνία.\n\n"
-            "**Πόσο συχνά ενημερώνεται;**\n"
-            "Η επιλογή στο chat ανανεώνεται εποχιακά. Για την "
-            "ενημερωμένη έκδοση χρησιμοποιήστε το κουμπί ανοίγματος.\n\n"
-            "**Πώς σιγάζω τις ειδοποιήσεις;**\n"
-            "Από τις ρυθμίσεις του chat στο Telegram μπορείτε να "
-            "σιγάσετε ή να απενεργοποιήσετε εντελώς τις ειδοποιήσεις.\n\n"
-            "**Μπορώ να μοιραστώ ένα άρθρο;**\n"
-            "Ναι. Χρησιμοποιήστε τις επιλογές κοινής χρήσης "
-            "του Telegram για να προωθήσετε το μήνυμα σε "
-            "άλλο chat ή εφαρμογή."
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data == "travel")
+def travel(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(open_button())
+    markup.row(types.InlineKeyboardButton(text="📋 Los temas del dia", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"))
+    text = ("🏠 *Cinco pueblos espanoles para el otono*\n\n"
+        "Lejos de los destinos mas concurridos, "
+        "cinco pueblos que muestran su mejor "
+        "cara en otono.\n\n"
+        "*Albarracin (Teruel)*\n"
+        "Murallas medievales, calles empinadas "
+        "y casas colgadas sobre el rio Guadalaviar. "
+        "Los colores del otono lo transforman.\n\n"
+        "*Cudillero (Asturias)*\n"
+        "Un anfiteatro de casas de colores sobre "
+        "el Cantabrico. Sidra, pescado fresco "
+        "y calma absoluta.\n\n"
+        "*Frigiliana (Malaga)*\n"
+        "Pueblo blanco en la Axarquia. Callejuelas "
+        "estrechas, buganvillas y vistas al "
+        "Mediterraneo. Otono sin frio.\n\n"
+        "*Combarro (Pontevedra)*\n"
+        "Horreos al borde del mar, cruceiros "
+        "de piedra y marisco recien sacado "
+        "de la ria. Galicia en estado puro.\n\n"
+        "*Ainsa (Huesca)*\n"
+        "Plaza Mayor medieval con el Pirineo "
+        "de fondo. Senderismo, quesos artesanos "
+        "y noches de cielo limpio.\n\n"
+        "_Reserva con antelacion en temporada alta._")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
-    # ============================================
-    # ЭКРАН 9 — CONTACT (Επικοινωνία)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "contact")
-    def contact(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_sommario = types.InlineKeyboardButton(text="🏛 Περίληψη", callback_data="sommario")
-        btn_about = types.InlineKeyboardButton(text="🏛 Σχετικά με το SKAI", callback_data="about")
-        markup.row(btn_sommario, btn_about)
-
-        text = (
-            "✏️ **Επικοινωνία σύνταξης**\n\n"
-            "Για εκδοτική αλληλογραφία:\n"
-            "• E-mail: info@skai.gr\n"
-            "• Υπηρεσία αναγνωστών: skai.gr/contact\n\n"
-            "**Εκδότης**\n"
-            "ΣΚΑΪ Μ.Α.Ε.\n"
-            "Φαληρέας & Εθνάρχου Μακαρίου\n"
-            "18547 Νέο Φάληρο\n\n"
-            "Παρατηρήσεις, διευκρινίσεις και σχόλια αναγνωστών "
-            "διαχειρίζεται η υπηρεσία αναγνωστών τις εργάσιμες ημέρες."
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data == "summary")
+def summary(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(open_button())
+    markup.add(types.InlineKeyboardButton(text="📋 Los temas del dia", callback_data="headlines"))
+    markup.row(types.InlineKeyboardButton(text="📖 Glosario", callback_data="glossary"), types.InlineKeyboardButton(text="❓ Preguntas frecuentes", callback_data="faq"))
+    markup.row(types.InlineKeyboardButton(text="✏️ Contacto", callback_data="contact"), types.InlineKeyboardButton(text="🏛 Informacion", callback_data="about"))
+    text = ("🏛 *Resumen*\n\n"
+        "Desde este menu puede:\n\n"
+        "• Leer *los temas del dia* y nuestros articulos.\n"
+        "• Consultar las secciones: Cultura, "
+        "Viajes, Cocina, Ciencia.\n"
+        "• Ver el glosario y las preguntas frecuentes.\n"
+        "• Conocernos y contactar con la redaccion.\n\n"
+        "Para la edicion completa, use el boton.")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
-    # ============================================
-    # ЭКРАН 10 — ABOUT (Σχετικά με το SKAI)
-    # ============================================
-    @bot.callback_query_handler(func=lambda call: call.data == "about")
-    def about(call):
-        bot.answer_callback_query(call.id)
-        markup = types.InlineKeyboardMarkup(row_width=2)
-        btn_open = types.InlineKeyboardButton(
-            text="📰 Ανοίξτε το SKAI",
-            web_app=types.WebAppInfo(url=WEB_APP_URL)
-        )
-        btn_sommario = types.InlineKeyboardButton(text="🏛 Περίληψη", callback_data="sommario")
-        btn_contact = types.InlineKeyboardButton(text="✏️ Επικοινωνία", callback_data="contact")
-        markup.add(btn_open)
-        markup.row(btn_sommario, btn_contact)
-
-        text = (
-            "🏛 **Σχετικά με το SKAI**\n\n"
-            "_Ο ΣΚΑΪ_ ιδρύθηκε στην Αθήνα το **1993** ως ραδιοφωνικός "
-            "σταθμός, και γρήγορα εξελίχθηκε σε ένα από τα μεγαλύτερα "
-            "ΜΜΕ στην Ελλάδα. Από την αρχή, ο ΣΚΑΪ καθιερώθηκε ως "
-            "ένα αξιόπιστο μέσο ενημέρωσης με ευρεία κάλυψη.\n\n"
-            "Σήμερα ο ΣΚΑΪ ανήκει στον **Όμιλο ΣΚΑΪ**, που περιλαμβάνει "
-            "τηλεοπτικό κανάλι, ραδιόφωνο και ψηφιακά μέσα. Συνεχίζει "
-            "να παράγει περιεχόμενο σε πολιτισμό, ταξίδια, κουζίνα, "
-            "επιστήμη, αθλητικά και πρακτική οικονομία.\n\n"
-            "Ανάμεσα σε τηλεόραση, ιστοσελίδα και εφαρμογή, ο ΣΚΑΪ "
-            "φτάνει καθημερινά εκατομμύρια αναγνώστες. Η έδρα είναι "
-            "στο Νέο Φάληρο· ο ιστότοπος είναι skai.gr.\n\n"
-            "Αυτή η έκδοση Telegram σχεδιάστηκε για να κάνει πιο "
-            "βολική την ανάγνωση διαχρονικών περιεχομένων μέσα "
-            "από το chat."
-        )
-
-        bot.send_message(call.message.chat.id, text,
-                         parse_mode="Markdown", reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data == "glossary")
+def glossary(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton(text="📋 Los temas del dia", callback_data="headlines"))
+    markup.add(types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"))
+    text = ("📖 *Pequeno glosario*\n\n"
+        "*Redaccion* — el equipo que selecciona "
+        "y prepara los textos.\n\n"
+        "*Editorial* — articulo de opinion que "
+        "abre una seccion.\n\n"
+        "*Fotorreportaje* — relato periodistico "
+        "construido con fotografias.\n\n"
+        "*Contenido atemporal* — texto cuya "
+        "actualidad no depende de la noticia "
+        "del dia.\n\n"
+        "*Corresponsal* — periodista que cubre "
+        "noticias sobre el terreno.\n\n"
+        "*Seccion* — apartado fijo dedicado "
+        "a un tema concreto.")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
-    # ============================================
-    # ЗАПУСК
-    # ============================================
-    print("SKAI Bot is running...")
-    bot.infinity_polling()
+@bot.callback_query_handler(func=lambda call: call.data == "faq")
+def faq(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton(text="📋 Los temas del dia", callback_data="headlines"))
+    markup.add(types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"))
+    text = ("❓ *Preguntas frecuentes*\n\n"
+        "*Es oficial este bot?*\n"
+        "Temas del Dia es un proyecto editorial "
+        "independiente.\n\n"
+        "*Con que frecuencia se actualiza?*\n"
+        "La seleccion se renueva cada temporada.\n\n"
+        "*Como silencio las notificaciones?*\n"
+        "Desde los ajustes del chat en Telegram.\n\n"
+        "*Puedo compartir un articulo?*\n"
+        "Si, usando las opciones de compartir "
+        "de Telegram.")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "contact")
+def contact(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.row(types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"), types.InlineKeyboardButton(text="🏛 Informacion", callback_data="about"))
+    text = ("✏️ *Contacto*\n\n"
+        "Para correspondencia editorial:\n"
+        "• E-mail: redaccion@temasdeldia.es\n\n"
+        "*Editor*\n"
+        "Temas del Dia S.L.\n"
+        "Gran Via, 32\n"
+        "28013 Madrid\n"
+        "Espana\n\n"
+        "Comentarios y sugerencias de los lectores "
+        "en dias laborables.")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda call: call.data == "about")
+def about(call):
+    bot.answer_callback_query(call.id)
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(open_button())
+    markup.row(types.InlineKeyboardButton(text="🏛 Resumen", callback_data="summary"), types.InlineKeyboardButton(text="✏️ Contacto", callback_data="contact"))
+    text = ("🏛 *Informacion sobre Temas del Dia*\n\n"
+        "Temas del Dia es un proyecto editorial "
+        "independiente dedicado a la cultura, "
+        "los viajes, la cocina y la tecnologia.\n\n"
+        "La redaccion selecciona cada dia contenidos "
+        "de calidad para ofrecer a los lectores una "
+        "pausa informada.\n\n"
+        "Esta edicion de Telegram esta pensada para "
+        "facilitar la lectura desde el chat.")
+    bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
+
+
+@bot.message_handler(func=lambda message: True)
+def handle_all(message):
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(open_button())
+    markup.add(types.InlineKeyboardButton(text="📋 Los temas del dia", callback_data="headlines"))
+    bot.send_message(message.chat.id, "📰 Bienvenidos! Pulse *Los temas del dia* para empezar.", parse_mode="Markdown", reply_markup=markup)
+
+
+print("Temas del Dia Bot is running...")
+bot.infinity_polling()
