@@ -4,35 +4,34 @@ import telebot
 from telebot import types
 
 BOT_TOKEN = re.sub(r"\s+", "", os.environ["TELEGRAM_BOT_TOKEN"])
-WEB_APP_URL = os.environ.get("https://vanishvili93-jpg.github.io/tg-webapp/it.html", "").strip()
+WEB_APP_URL = os.environ.get("WEB_APP_URL", "").strip()
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 try:
     if WEB_APP_URL:
-        bot.set_chat_menu_button(menu_button=types.MenuButtonWebApp(type="web_app", text="Baca", web_app=types.WebAppInfo(url=WEB_APP_URL)))
+        bot.set_chat_menu_button(menu_button=types.MenuButtonWebApp(type="web_app", text="Read", web_app=types.WebAppInfo(url=WEB_APP_URL)))
 except Exception as e:
     print("Menu button error: " + str(e))
 
 
 def open_button():
     if WEB_APP_URL:
-        return types.InlineKeyboardButton(text="📰 Baca sekarang", web_app=types.WebAppInfo(url=WEB_APP_URL))
-    return types.InlineKeyboardButton(text="📰 Baca sekarang", url="https://vanishvili93-jpg.github.io/tg-webapp/it.html")
+        return types.InlineKeyboardButton(text="📰 Read now", web_app=types.WebAppInfo(url=WEB_APP_URL))
+    return types.InlineKeyboardButton(text="📰 Read now", url="https://vanishvili93-jpg.github.io/tg-webapp/it.html")
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(open_button())
-    markup.row(types.InlineKeyboardButton(text="📋 Topik hari ini", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"))
-    text = ("📰 *Selamat datang ke Bacaan Harian.*\n\n"
-        "Setiap hari pilihan artikel tentang "
-        "budaya, pelancongan, masakan, sains "
-        "dan teknologi — untuk dibaca dengan "
-        "tenang di chat.\n\n"
-        "Tekan *Topik hari ini* "
-        "untuk bermula.")
+    markup.row(types.InlineKeyboardButton(text="📋 Today's picks", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"))
+    text = ("📰 *Welcome to Daily Read India.*\n\n"
+        "Every day a curated selection of "
+        "culture, travel, cuisine, science "
+        "and technology — to read at your "
+        "own pace in chat.\n\n"
+        "Tap *Today's picks* to begin.")
     bot.send_message(message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -41,20 +40,20 @@ def headlines(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
-        types.InlineKeyboardButton(text="🎨 Budaya — pameran seni", callback_data="culture"),
-        types.InlineKeyboardButton(text="🍳 Masakan — resipi tradisional", callback_data="cuisine"),
-        types.InlineKeyboardButton(text="🏠 Pelancongan — lima kampung", callback_data="travel"),
-        types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"))
-    text = ("📋 *Topik hari ini*\n\n"
-        "Tiga bacaan pilihan untuk hari ini. "
-        "Setiap satu lengkap dalam chat.\n\n"
-        "*Budaya* — pameran seni: lima "
-        "destinasi muzium di Malaysia.\n\n"
-        "*Masakan* — resipi tradisional: empat "
-        "hidangan klasik warisan Melayu.\n\n"
-        "*Pelancongan* — lima kampung tersembunyi "
-        "untuk hujung minggu.\n\n"
-        "Tekan tajuk untuk membaca artikel penuh.")
+        types.InlineKeyboardButton(text="🎨 Culture — monsoon exhibitions", callback_data="culture"),
+        types.InlineKeyboardButton(text="🍛 Cuisine — regional thalis", callback_data="cuisine"),
+        types.InlineKeyboardButton(text="🏠 Travel — five hidden villages", callback_data="travel"),
+        types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"))
+    text = ("📋 *Today's picks*\n\n"
+        "Three stories selected for today. "
+        "Each one complete in chat.\n\n"
+        "*Culture* — monsoon exhibitions: five "
+        "must-visit shows at Indian museums.\n\n"
+        "*Cuisine* — regional thalis: four "
+        "classic preparations from across India.\n\n"
+        "*Travel* — five hidden villages to "
+        "discover on a long weekend.\n\n"
+        "Tap a title to read the full story.")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -63,34 +62,36 @@ def culture(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(open_button())
-    markup.row(types.InlineKeyboardButton(text="📋 Topik hari ini", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"))
-    text = ("🎨 *Pameran seni: lima destinasi "
-        "muzium di Malaysia*\n\n"
-        "Muzium-muzium membuka musim baru.\n\n"
-        "*Kuala Lumpur — Muzium Negara*\n"
-        "Pameran retrospektif seni Melayu "
-        "moden. Karya-karya jarang dipamerkan "
-        "dari koleksi peribadi dan bahan "
-        "arkib yang belum pernah diterbitkan.\n\n"
-        "*Pulau Pinang — Muzium Seni Pinang*\n"
-        "Seni kontemporari dari bakat-bakat "
-        "tempatan. Instalasi, video dan "
-        "arca dalam dialog dengan warisan "
-        "Peranakan.\n\n"
-        "*Melaka — Muzium Stadthuys*\n"
-        "Sejarah Selat Melaka melalui "
-        "peta-peta purba dan artifak "
-        "perdagangan. Empat abad dalam "
-        "satu bangunan.\n\n"
-        "*Kuching — Muzium Sarawak*\n"
-        "Budaya Dayak dan warisan Borneo. "
-        "Tekstil, ukiran kayu dan "
-        "upacara tradisional.\n\n"
-        "*Ipoh — Muzium Darul Ridzuan*\n"
-        "Perlombongan bijih timah dan "
-        "warisan Perak. Fotografi "
-        "hitam putih dari era kolonial.\n\n"
-        "_Waktu operasi di laman web rasmi._")
+    markup.row(types.InlineKeyboardButton(text="📋 Today's picks", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"))
+    text = ("🎨 *Monsoon exhibitions: five "
+        "must-visit shows in India*\n\n"
+        "Museums open the new season.\n\n"
+        "*Delhi — National Museum*\n"
+        "A major retrospective of Mughal "
+        "miniature paintings. Rare works "
+        "from private collections and "
+        "unpublished archival material.\n\n"
+        "*Mumbai — CSMVS*\n"
+        "Chhatrapati Shivaji Maharaj Vastu "
+        "Sangrahalaya presents contemporary "
+        "Indian art alongside ancient "
+        "sculptures. Old meets new.\n\n"
+        "*Kolkata — Indian Museum*\n"
+        "The oldest museum in Asia. A new "
+        "wing dedicated to Bengal Renaissance "
+        "art and rare manuscripts from "
+        "the 19th century.\n\n"
+        "*Jaipur — Albert Hall Museum*\n"
+        "Rajasthani textiles, pottery and "
+        "jewellery spanning five centuries. "
+        "Restored galleries with natural "
+        "light.\n\n"
+        "*Chennai — Government Museum*\n"
+        "Bronze gallery with Chola dynasty "
+        "masterpieces. Nataraja and Parvati "
+        "in forms rarely seen outside "
+        "temple walls.\n\n"
+        "_Check museum websites for timings._")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -99,34 +100,34 @@ def cuisine(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(open_button())
-    markup.row(types.InlineKeyboardButton(text="📋 Topik hari ini", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"))
-    text = ("🍳 *Resipi tradisional: empat "
-        "hidangan klasik Malaysia*\n\n"
-        "Masakan Malaysia adalah khazanah "
-        "rasa serantau.\n\n"
-        "*Nasi Lemak*\n"
-        "Nasi yang dimasak dengan santan "
-        "dan daun pandan. Disajikan dengan "
-        "sambal, ikan bilis, kacang tanah, "
-        "timun dan telur rebus. Sarapan "
-        "kebangsaan Malaysia.\n\n"
-        "*Rendang*\n"
-        "Daging lembu dimasak perlahan "
-        "dengan rempah, santan, serai "
-        "dan lengkuas sehingga kering. "
-        "Hidangan perayaan yang penuh "
-        "aroma.\n\n"
-        "*Char Kuey Teow*\n"
-        "Kuey teow digoreng dengan udang, "
-        "kerang, taugeh, telur dan kicap. "
-        "Api besar, wajan panas. Rasa "
-        "jalanan Pulau Pinang.\n\n"
-        "*Roti Canai*\n"
-        "Doh yang dilipat berkali-kali "
-        "sehingga lembut dan rangup. "
-        "Disajikan dengan dal atau kari. "
-        "Bila-bila masa, siang atau malam.\n\n"
-        "_Sukatan mengikut citarasa sendiri._")
+    markup.row(types.InlineKeyboardButton(text="📋 Today's picks", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"))
+    text = ("🍛 *Regional thalis: four classic "
+        "preparations from across India*\n\n"
+        "Indian cuisine is a universe of "
+        "regional flavours.\n\n"
+        "*Gujarati Thali*\n"
+        "Sweet, sour and spicy in one plate. "
+        "Dal, kadhi, shak, rotli, rice, "
+        "pickle and a gulab jamun to finish. "
+        "Balanced and vegetarian.\n\n"
+        "*South Indian Meals*\n"
+        "Rice, sambar, rasam, kootu, poriyal, "
+        "appalam and payasam on a banana leaf. "
+        "Eaten with the right hand. "
+        "Simple and complete.\n\n"
+        "*Rajasthani Thali*\n"
+        "Dal baati churma, gatte ki sabzi, "
+        "ker sangri and bajra roti. Desert "
+        "cuisine built for preservation "
+        "and bold flavour.\n\n"
+        "*Bengali Thali*\n"
+        "Shukto, dal, begun bhaja, "
+        "maacher jhol, chutney and "
+        "mishti doi. A sequence from "
+        "bitter to sweet. Designed "
+        "to be eaten in order.\n\n"
+        "_Adjust spice levels to your "
+        "own taste._")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -135,35 +136,35 @@ def travel(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(open_button())
-    markup.row(types.InlineKeyboardButton(text="📋 Topik hari ini", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"))
-    text = ("🏠 *Lima kampung tersembunyi "
-        "untuk hujung minggu*\n\n"
-        "*Kampung Kuantan (Selangor)*\n"
-        "Terkenal dengan kelip-kelip di "
-        "sepanjang Sungai Selangor. Malam "
-        "yang tenang dan pemandangan "
-        "ajaib semula jadi.\n\n"
-        "*Sekeping Serendah (Selangor)*\n"
-        "Hutan tropika dan seni bina moden "
-        "bersatu. Penginapan unik di "
-        "tengah rimba. Udara segar dan "
-        "ketenangan mutlak.\n\n"
-        "*Kampung Banghuris (Melaka)*\n"
-        "Kampung mural di Melaka. Dinding "
-        "rumah-rumah dihiasi lukisan "
-        "oleh artis tempatan. Seni "
-        "dan tradisi bersatu.\n\n"
-        "*Sungai Lembing (Pahang)*\n"
-        "Bekas lombong bijih timah British. "
-        "Lautan awan di puncak bukit pada "
-        "waktu subuh. Sejarah dan "
-        "keindahan alam.\n\n"
-        "*Kampung Bako (Sarawak)*\n"
-        "Pintu masuk ke Taman Negara Bako. "
-        "Bekantan, hutan bakau dan "
-        "pantai tersembunyi. Borneo "
-        "pada yang terbaik.\n\n"
-        "_Tempah penginapan lebih awal._")
+    markup.row(types.InlineKeyboardButton(text="📋 Today's picks", callback_data="headlines"), types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"))
+    text = ("🏠 *Five hidden villages for "
+        "a long weekend*\n\n"
+        "*Mawlynnong (Meghalaya)*\n"
+        "Asia's cleanest village. Living "
+        "root bridges, bamboo dustbins "
+        "and mist rolling through the "
+        "Khasi Hills.\n\n"
+        "*Malana (Himachal Pradesh)*\n"
+        "An ancient village above the "
+        "Parvati Valley. Stone houses, "
+        "its own parliament and traditions "
+        "unchanged for centuries.\n\n"
+        "*Zuluk (Sikkim)*\n"
+        "A former Silk Route stop at "
+        "10,000 feet. Thirty-two hairpin "
+        "turns and a view of Kanchenjunga "
+        "at sunrise.\n\n"
+        "*Gandikota (Andhra Pradesh)*\n"
+        "India's Grand Canyon. The Pennar "
+        "river cuts through red gorges. "
+        "A ruined fort and almost no "
+        "tourists.\n\n"
+        "*Khimsar (Rajasthan)*\n"
+        "A desert village with a 500-year-old "
+        "fort. Camel rides, sand dunes and "
+        "the silence of the Thar.\n\n"
+        "_Book transport in advance for "
+        "remote villages._")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -172,18 +173,18 @@ def summary(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(open_button())
-    markup.add(types.InlineKeyboardButton(text="📋 Topik hari ini", callback_data="headlines"))
-    markup.row(types.InlineKeyboardButton(text="📖 Glosari", callback_data="glossary"), types.InlineKeyboardButton(text="❓ Soalan lazim", callback_data="faq"))
-    markup.row(types.InlineKeyboardButton(text="✏️ Hubungi kami", callback_data="contact"), types.InlineKeyboardButton(text="🏛 Tentang kami", callback_data="about"))
-    text = ("🏛 *Ringkasan*\n\n"
-        "Dari menu ini anda boleh:\n\n"
-        "• Baca *topik hari ini* dan artikel kami.\n"
-        "• Lihat ruangan: Budaya, "
-        "Pelancongan, Masakan, Sains.\n"
-        "• Semak glosari dan soalan lazim.\n"
-        "• Ketahui tentang kami dan hubungi.\n\n"
-        "Untuk edisi penuh gunakan "
-        "butang di bawah.")
+    markup.add(types.InlineKeyboardButton(text="📋 Today's picks", callback_data="headlines"))
+    markup.row(types.InlineKeyboardButton(text="📖 Glossary", callback_data="glossary"), types.InlineKeyboardButton(text="❓ FAQ", callback_data="faq"))
+    markup.row(types.InlineKeyboardButton(text="✏️ Contact", callback_data="contact"), types.InlineKeyboardButton(text="🏛 About", callback_data="about"))
+    text = ("🏛 *Summary*\n\n"
+        "From this menu you can:\n\n"
+        "• Read *today's picks* and our stories.\n"
+        "• Browse sections: Culture, Travel, "
+        "Cuisine, Science.\n"
+        "• Check the glossary and FAQ.\n"
+        "• Learn about us and get in touch.\n\n"
+        "For the full edition, use the "
+        "button below.")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -191,22 +192,22 @@ def summary(call):
 def glossary(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton(text="📋 Topik hari ini", callback_data="headlines"))
-    markup.add(types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"))
-    text = ("📖 *Glosari ringkas*\n\n"
-        "*Sidang redaksi* — pasukan yang memilih "
-        "dan menyediakan artikel.\n\n"
-        "*Rencana* — artikel pendapat yang "
-        "membuka sesuatu ruangan.\n\n"
-        "*Fotojurnalisme* — cerita berita "
-        "yang dibina melalui gambar.\n\n"
-        "*Kandungan abadi* — teks yang "
-        "relevansinya tidak bergantung "
-        "pada berita semasa.\n\n"
-        "*Wartawan* — jurnalis yang "
-        "melapor dari lapangan.\n\n"
-        "*Ruangan* — bahagian tetap "
-        "tentang topik tertentu.")
+    markup.add(types.InlineKeyboardButton(text="📋 Today's picks", callback_data="headlines"))
+    markup.add(types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"))
+    text = ("📖 *A short glossary*\n\n"
+        "*Newsroom* — the team that selects "
+        "and prepares stories.\n\n"
+        "*Editorial* — an opinion piece that "
+        "opens a section.\n\n"
+        "*Photojournalism* — storytelling "
+        "built around photographs.\n\n"
+        "*Evergreen content* — stories whose "
+        "relevance does not depend on the "
+        "news of the day.\n\n"
+        "*Correspondent* — a journalist "
+        "reporting from the field.\n\n"
+        "*Column* — a recurring section "
+        "dedicated to a specific topic.")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -214,19 +215,18 @@ def glossary(call):
 def faq(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton(text="📋 Topik hari ini", callback_data="headlines"))
-    markup.add(types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"))
-    text = ("❓ *Soalan lazim*\n\n"
-        "*Adakah bot ini rasmi?*\n"
-        "Bacaan Harian adalah projek "
-        "editorial bebas.\n\n"
-        "*Berapa kerap dikemas kini?*\n"
-        "Pilihan diperbaharui setiap musim.\n\n"
-        "*Bagaimana mematikan notifikasi?*\n"
-        "Melalui tetapan chat Telegram.\n\n"
-        "*Bolehkah saya kongsi artikel?*\n"
-        "Ya, menggunakan pilihan kongsi "
-        "dalam Telegram.")
+    markup.add(types.InlineKeyboardButton(text="📋 Today's picks", callback_data="headlines"))
+    markup.add(types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"))
+    text = ("❓ *Frequently asked questions*\n\n"
+        "*Is this bot official?*\n"
+        "Daily Read India is an independent "
+        "editorial project.\n\n"
+        "*How often is it updated?*\n"
+        "The selection is refreshed seasonally.\n\n"
+        "*How do I mute notifications?*\n"
+        "From Telegram chat settings.\n\n"
+        "*Can I share a story?*\n"
+        "Yes, using Telegram sharing options.")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -234,16 +234,16 @@ def faq(call):
 def contact(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.row(types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"), types.InlineKeyboardButton(text="🏛 Tentang kami", callback_data="about"))
-    text = ("✏️ *Hubungi kami*\n\n"
-        "Untuk surat-menyurat editorial:\n"
-        "• E-mel: redaksi@bacaanharian.my\n\n"
-        "*Penerbit*\n"
-        "Bacaan Harian Sdn. Bhd.\n"
-        "Jalan Bukit Bintang 55\n"
-        "55100 Kuala Lumpur\n"
-        "Malaysia\n\n"
-        "Maklum balas pembaca pada hari bekerja.")
+    markup.row(types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"), types.InlineKeyboardButton(text="🏛 About", callback_data="about"))
+    text = ("✏️ *Contact*\n\n"
+        "For editorial correspondence:\n"
+        "• E-mail: hello@dailyreadindia.in\n\n"
+        "*Publisher*\n"
+        "Daily Read India Pvt. Ltd.\n"
+        "Connaught Place\n"
+        "New Delhi 110001\n"
+        "India\n\n"
+        "Reader feedback on working days.")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -252,17 +252,17 @@ def about(call):
     bot.answer_callback_query(call.id)
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(open_button())
-    markup.row(types.InlineKeyboardButton(text="🏛 Ringkasan", callback_data="summary"), types.InlineKeyboardButton(text="✏️ Hubungi kami", callback_data="contact"))
-    text = ("🏛 *Tentang Bacaan Harian*\n\n"
-        "Bacaan Harian adalah projek "
-        "editorial bebas yang khusus "
-        "untuk budaya, pelancongan, "
-        "masakan dan teknologi.\n\n"
-        "Sidang redaksi memilih kandungan "
-        "berkualiti setiap hari untuk "
-        "rehat yang bermaklumat.\n\n"
-        "Edisi Telegram ini direka untuk "
-        "bacaan selesa dalam chat.")
+    markup.row(types.InlineKeyboardButton(text="🏛 Summary", callback_data="summary"), types.InlineKeyboardButton(text="✏️ Contact", callback_data="contact"))
+    text = ("🏛 *About Daily Read India*\n\n"
+        "Daily Read India is an independent "
+        "editorial project dedicated to "
+        "culture, travel, cuisine and "
+        "technology.\n\n"
+        "The editorial team selects quality "
+        "content every day for an informed "
+        "break from the daily routine.\n\n"
+        "This Telegram edition is designed "
+        "for comfortable reading in chat.")
     bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=markup)
 
 
@@ -270,9 +270,9 @@ def about(call):
 def handle_all(message):
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(open_button())
-    markup.add(types.InlineKeyboardButton(text="📋 Topik hari ini", callback_data="headlines"))
-    bot.send_message(message.chat.id, "📰 Selamat datang! Tekan *Topik hari ini* untuk bermula.", parse_mode="Markdown", reply_markup=markup)
+    markup.add(types.InlineKeyboardButton(text="📋 Today's picks", callback_data="headlines"))
+    bot.send_message(message.chat.id, "📰 Welcome! Tap *Today's picks* to begin.", parse_mode="Markdown", reply_markup=markup)
 
 
-print("Bacaan Harian Bot is running...")
+print("Daily Read India Bot is running...")
 bot.infinity_polling()
